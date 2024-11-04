@@ -1,0 +1,8 @@
+import sqlite3
+import os
+import json
+
+text = """{"title": "Invoice for Rollladenreparatur", "summary": "Invoice for the rolladen repair in the living room, detailing parts and labor costs.", "bank_info": {"bank_name": "Raiffeisen-Volksbank Erlangen", "account_number": "DE93 7606 9559 0002 9106 59", "account_holder": "Rolladen Böhm e.K.", "transfer_deadline": "16-10-2024", "amount": {"currency": "EUR", "value": 150.08}}, "related_companies_or_people": {"name": "Frau L. Li", "company": None, "position": None, "contact_info": {"phone": "0162 32 33890", "email": "lilinjie0831@gmail.com", "address": {"street": "Altkirchenweg 1", "city": "Erlangen - Dechsendorf", "postal_code": "91056", "country": "Germany"}}}, "recipients": {"name": "Frau L. Li", "email": "lilinjie0831@gmail.com"}, "reference_number":"asdasd", "language": "German", "timestamp": "08-10-2024"}"""
+text2 = """{"Title": "Invoice for Roller Shutter Repair", "summary": "Invoice issued for roller shutter repair in the living room, detailing materials and labor costs.", "bank_info": {"bank_name": "Raiffeisen-Volksbank Erlangen", "account_number": "2910659", "account_holder": "Rolladen Böhm e.K.", "transfer_deadline": "08-10-2024", "amount": {"currency": "EUR", "value": 150.08}}, "related_companies_or_people": {"name": "L. Li", "company": "N/A", "position": "N/A", "contact_info": {"phone": "0162 32 33890", "email": "lilinjie0831@gmail.com", "address": {"street": "Altkirchenweg 1", "city": "Erlangen - Dechsendorf", "postal_code": "91056", "country": "Germany"}}}, "recipients": {"name": "L. Li", "email": "lilinjie0831@gmail.com"}, "reference_number": "541802", "language": "German", "timestamp": "08-10-2024"}"""
+text = text.replace("None", '"N/A"')
+data = json.loads(text)

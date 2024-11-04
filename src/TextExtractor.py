@@ -1,16 +1,33 @@
-import os
-import json
 import PyPDF2
 import easyocr
 import fitz  
 import tempfile
+import langdetect
 
 class TextExtractor:
     
     def __init__(self, file_path, temp_file_path):
         self.file_path = file_path
         self.temp = temp_file_path
-        self.OCR_reader = easyocr.Reader(['en', 'de']) ## tpdo: use langdetect to detect language initializing easyOCR
+        self.language = self.detect_language()
+        self.OCR_reader = easyocr.Reader([self.language])
+        
+    def detect_language(self):
+        """detect document language to initialize ocr reader"""
+        try:
+            with open(self.file_path, 'rb') as file:
+                sample_text = file.read(1024)  # read the first 1kB content to detect language
+            detected_lang = langdetect.detect(sample_text.decode('utf-8', errors='ignore'))
+            
+            if detected_lang == 'zh-cn' or detected_lang == 'zh-tw':
+                return 'ch'  
+            elif detected_lang in ['en', 'de']:
+                return detected_lang
+            else:
+                return 'de'
+            
+        except:
+            return 'de'  
     
     def extract_text_from_pdf(self):
         """extract text from pdf"""
@@ -41,6 +58,20 @@ class TextExtractor:
                         ocr_result = self.OCR_reader.readtext(img_path, detail=0)
                         page_text = " ".join(ocr_result)
                 
-                        text += page_text + "\n"
+            text += page_text + "\n"
         
         return text.strip()
+    
+    def extract_text_from_image(self):
+        ocr_result = self.OCR_reader.readtext(self.file_path, detail=0)
+        text = " ".join(ocr_result)
+        return text.strip()
+    
+    def extract_text_from_txt(self):
+        """read text from txt file"""
+        try:
+            with open(self.file_path, 'r', encoding='utf-8') as file:
+                text = file.read()
+            return text.strip()
+        except:
+            return ""
