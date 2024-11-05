@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import logging
 from datetime import datetime
@@ -8,18 +9,20 @@ from chatGPT import AIAssistant
 from Database.DBHandler import DatabaseManager
 
 class DocumentReader:
-    def __init__(self, watch_directory, handled_directory, temp_file, key_path, db_path):
+    def __init__(self, watch_directory, handled_directory, temp_file, key_path, db_path, log_path):
         self.watch_directory = watch_directory
         self.handled_directory = handled_directory
         self.inotify = INotify()
         self.watch_flags = flags.CLOSE_WRITE | flags.MOVED_TO
         self.temp = temp_file
-        self.key_path = key_path
+        with open(key_path, "r") as file:
+            self.key = file.read()
+        
         self.dbManager = DatabaseManager(db_path)
         self.dbManager.connect()
 
         # Set up logging
-        self.setup_logging()
+        self.setup_logging(log_path)
         
     def get_env_var(self):
         self.watch_directory = os.getenv(WATCH_DIRECTORY)
@@ -30,18 +33,16 @@ class DocumentReader:
         
         print(f"using CHECK_INTERVAL: ", self.check_interval)
 
-    def setup_logging(self):
-        # Define the log file path
-        LOG_DIR = "./log/"
+    def setup_logging(self, log_path):
         current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
         LOG_FILE = f"DocumentReader_{current_time}.log"
 
         # Ensure the log directory exists
-        if not os.path.exists(LOG_DIR):
-            os.makedirs(LOG_DIR)
+        if not os.path.exists(log_path):
+            os.makedirs(log_path)
 
         # Full path to the log file
-        log_file_path = os.path.join(LOG_DIR, LOG_FILE)
+        log_file_path = os.path.join(log_path, LOG_FILE)
 
         # Setup logging configuration
         logging.basicConfig(
@@ -81,7 +82,7 @@ class DocumentReader:
             else:
                 logging.info(f"unknow format document")
                 
-            ai_assistant = AIAssistant(KEY_PATH)
+            ai_assistant = AIAssistant(self.key)
             if not extracted_text:
                 logging.info(f"nothing in extracted_text")
                 return
@@ -125,14 +126,20 @@ class DocumentReader:
 
 if __name__ == '__main__':
     # Define the directories to monitor
-    WATCH_DIRECTORY = "/home/heiyujia/Python_Services/DocumentReader/Processing"
-    HANDLED_DIRECTORY = "/home/heiyujia/Python_Services/DocumentReader/Processed"
-    TEMP_PATH = "/home/heiyujia/Python_Services/DocumentReader/temp"
-    KEY_PATH = "/home/heiyujia/Python_Services/DocumentReader/OpenAIKey/key.txt"
-    DB_PATH = "/home/heiyujia/Python_Services/DocumentReader/Database"
+    WATCH_DIRECTORY = os.environ.get("WATCH_DIRECTORY")
+    HANDLED_DIRECTORY = os.environ.get("HANDLED_DIRECTORY")
+    TEMP_PATH = os.environ.get("TEMP_PATH")
+    KEY_PATH = os.environ.get("KEY_PATH")
+    DB_PATH = os.environ.get("DB_PATH")
+    LOG_PATH = os.environ.get("LOG_PATH")
+    
+    # check if all env variables are set
+    if any(var is None for var in [WATCH_DIRECTORY, HANDLED_DIRECTORY, TEMP_PATH, KEY_PATH, DB_PATH, LOG_PATH]):
+        print("Error: One or more required environment variables are not set.")
+        sys.exit(1)  # exit with error 1
     
     # Create an instance of DocumentReader
-    reader = DocumentReader(WATCH_DIRECTORY, HANDLED_DIRECTORY, TEMP_PATH, KEY_PATH, DB_PATH)
+    reader = DocumentReader(WATCH_DIRECTORY, HANDLED_DIRECTORY, TEMP_PATH, KEY_PATH, DB_PATH, LOG_PATH)
 
     # Run the document reader service
     reader.run()

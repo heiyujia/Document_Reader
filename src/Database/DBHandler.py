@@ -12,7 +12,8 @@ class DatabaseManager:
         :param schema_path: Path to the SQL file containing the table structure
         """
         self.db_path = os.path.join(db_path, "Documents.db")
-        self.schema_path = "src/Database/sceleton.sql"
+        current_dir = os.path.dirname(__file__)
+        self.schema_path = os.path.join(current_dir,"sceleton.sql")
         self.connection = None
         self.cursor = None
         
