@@ -167,3 +167,9 @@ ChatGPT/
 
 # log file
 log/
+
+# Test file
+Test/
+
+# Docker file
+Dockerfile

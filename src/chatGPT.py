@@ -2,11 +2,8 @@ from openai import OpenAI
 
 class AIAssistant:
     
-    def __init__(self, key_path):
-        with open(key_path, "r") as file:
-            self.key = file.read()
-        
-        self.client = OpenAI(api_key=self.key)
+    def __init__(self, key):
+        self.client = OpenAI(api_key=key)
     
         self.max_tokens = 8192   # maximum tokens
         
